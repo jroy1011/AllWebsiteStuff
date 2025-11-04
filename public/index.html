@@ -1,89 +1,106 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latin Translator</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>📜 Latin Helper</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#top" class="active">Home</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.4.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.4.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.4.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.4.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.4.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.4.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.4.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.4.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.4.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.4.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+    <main id="top">
+        <section class="translator">
+            <div class="directions">
+                <h2>Welcome!</h2>
+                <p>This website will help you translate sentences that are in Latin! To start, please first select if your Latin is in poetry or in prose. Then type in the lines that you need help translating. Click Examine! and then when the button says Ready! you can take your mouse and over words to know the definition of the word and whether it is a noun, adjective, or verb. Words that are highlighted with the same color go together. Any complex grammar will be listed below the lines where you typed the Latin. You can try typing your translation in the box below and then click the button Am I Right? and the website will tell you if your translation is correct or not.</p>
+            </div>
 
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
-    </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
-    </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
+            <div class="mode-select">
+                <h3>Select Poetry or Prose</h3>
+                <div class="mode-buttons" role="group" aria-label="Select Latin mode">
+                    <button id="btn-poetry" class="mode-btn" aria-pressed="false">Poetry</button>
+                    <button id="btn-prose" class="mode-btn" aria-pressed="false">Prose</button>
+                </div>
+            </div>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+            <div id="author-section" class="author-section" hidden>
+                <h3>Enter Source of Latin (If Applicable)</h3>
+                <input id="author-input" type="text" placeholder="e.g., Vergil, Caesar, Ovid" aria-label="Author or source of Latin">
+            </div>
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
-        }
-      });
-    </script>
-  </body>
+            <div id="latin-section" class="latin-section" hidden>
+                <h3>Enter Latin Here:</h3>
+                <div class="latin-input-wrapper">
+                    <textarea id="latin-input" rows="6" placeholder="Type up to 50 words of Latin" aria-label="Latin input (max 50 words)"></textarea>
+                    <div id="latin-overlay" class="latin-overlay" aria-hidden="true"></div>
+                </div>
+                <div class="input-meta">
+                    <span id="word-count">0/50 words</span>
+                    <span id="input-warning" role="alert" aria-live="polite"></span>
+                </div>
+                <button id="examine-btn" class="primary" disabled>Examine!</button>
+            </div>
+
+            <div id="analysis-output" class="analysis-output" hidden>
+                <div class="legend" id="group-legend" aria-hidden="true"></div>
+                <div class="rendered-text" id="rendered-text" aria-label="Analyzed Latin with highlights"></div>
+            </div>
+
+            <div id="grammar-section" class="grammar-section" hidden>
+                <h3>Complex Grammar</h3>
+                <div id="grammar-list" class="grammar-list" aria-live="polite"></div>
+            </div>
+
+            <div id="translation-section" class="translation-section" hidden>
+                <h3>Enter Translation Here</h3>
+                <textarea id="translation-input" rows="5" placeholder="Type your English translation here" aria-label="Translation input"></textarea>
+                <div class="translation-actions">
+                    <button id="check-translation-btn" class="secondary">Am I Right?</button>
+                    <span id="translation-feedback" class="translation-feedback" aria-live="polite"></span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer id="contact">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Latin Helper</h3>
+                <p>Helping you analyze and translate Latin accurately.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#top">Top</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#">📘</a>
+                    <a href="#">📷</a>
+                    <a href="#">🐦</a>
+                    <a href="#">📌</a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Latin Helper. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
 </html>

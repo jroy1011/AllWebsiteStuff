@@ -170,6 +170,80 @@
         .paused.show {
             opacity: 1;
         }
+
+        /* Cookie banner */
+        .cookie-banner {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            border: 3px solid white;
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            display: none;
+            gap: 1rem;
+            align-items: center;
+            z-index: 2000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        .cookie-banner.show {
+            display: flex;
+        }
+        .cookie-text {
+            max-width: 520px;
+        }
+        .cookie-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Leaderboard */
+        .leaderboard {
+            margin-top: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 1.25rem;
+            border-radius: 15px;
+            max-width: 800px;
+        }
+        .leaderboard h3 {
+            margin-bottom: 0.75rem;
+            font-size: 1.4rem;
+        }
+        .leaderboard-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+        .leaderboard input[type="text"] {
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+        }
+        .leaderboard-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+        .leaderboard-item {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.6rem 0.8rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .leaderboard-note {
+            opacity: 0.8;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -222,6 +296,27 @@
         </div>
     </div>
 
+    <div class="leaderboard" id="leaderboard">
+        <h3>🏆 Leaderboard</h3>
+        <div class="leaderboard-controls">
+            <input type="text" id="playerNameInput" placeholder="Name (optional)" maxlength="20">
+            <button class="btn" id="loadLeaderboardBtn">Load Top Scores</button>
+        </div>
+        <ul id="leaderboardList" class="leaderboard-list"></ul>
+        <div class="leaderboard-note">Scores are saved when you win and consent is given.</div>
+    </div>
+
+    <div class="cookie-banner" id="cookieBanner">
+        <div class="cookie-text">
+            This site uses a small preference cookie to remember your selected difficulty.
+            You can play without cookies by declining.
+        </div>
+        <div class="cookie-actions">
+            <button class="btn" id="cookieAccept">Accept</button>
+            <button class="btn" id="cookieDecline">Decline</button>
+        </div>
+    </div>
+
     <script>
         // Canvas setup
         const canvas = document.getElementById('pongCanvas');
@@ -237,9 +332,9 @@
             x: canvas.width / 2,
             y: canvas.height / 2,
             radius: 10,
-            speedX: 5,
-            speedY: 5,
-            maxSpeed: 12
+            speedX: 15,
+            speedY: 15,
+            maxSpeed: 36
         };
 
         const paddleWidth = 15;
@@ -250,7 +345,7 @@
             y: canvas.height / 2 - paddleHeight / 2,
             width: paddleWidth,
             height: paddleHeight,
-            speed: 8,
+            speed: 24,
             dy: 0
         };
 
@@ -259,12 +354,42 @@
             y: canvas.height / 2 - paddleHeight / 2,
             width: paddleWidth,
             height: paddleHeight,
-            speed: 6
+            speed: 18
         };
 
         let playerScore = 0;
         let computerScore = 0;
         const winningScore = 5;
+
+        // Cookie utilities and consent
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "; expires=" + date.toUTCString();
+            document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Lax";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+            }
+            return null;
+        }
+
+        function eraseCookie(name) {
+            setCookie(name, '', -1);
+        }
+
+        function hasConsent() {
+            try {
+                if (localStorage.getItem('cookieConsent') === 'yes') return true;
+            } catch (e) {}
+            return getCookie('cookieConsent') === 'yes';
+        }
 
         // Input handling
         const keys = {};
@@ -321,17 +446,20 @@
         function setDifficulty(level) {
             difficulty = level;
             if (level === 'easy') {
-                computer.speed = 4;
-                ball.speedX = 4;
-                ball.speedY = 4;
+                computer.speed = 12;
+                ball.speedX = 12;
+                ball.speedY = 12;
             } else if (level === 'medium') {
-                computer.speed = 6;
-                ball.speedX = 5;
-                ball.speedY = 5;
+                computer.speed = 18;
+                ball.speedX = 15;
+                ball.speedY = 15;
             } else if (level === 'hard') {
-                computer.speed = 8;
-                ball.speedX = 6;
-                ball.speedY = 6;
+                computer.speed = 24;
+                ball.speedX = 18;
+                ball.speedY = 18;
+            }
+            if (hasConsent()) {
+                setCookie('pong_difficulty', level, 365);
             }
             restartGame();
         }
@@ -344,7 +472,7 @@
             const angle = (Math.random() * Math.PI / 3) - Math.PI / 6; // -30 to 30 degrees
             const direction = Math.random() > 0.5 ? 1 : -1;
             
-            const speed = difficulty === 'easy' ? 4 : difficulty === 'medium' ? 5 : 6;
+            const speed = difficulty === 'easy' ? 12 : difficulty === 'medium' ? 15 : 18;
             ball.speedX = direction * speed * Math.cos(angle);
             ball.speedY = speed * Math.sin(angle);
         }
@@ -380,6 +508,24 @@
             }
             
             message.classList.add('show');
+
+            // Save to leaderboard if player won and consent is given
+            if (winner === 'player' && typeof hasConsent === 'function' && hasConsent()) {
+                try {
+                    const nameEl = document.getElementById('playerNameInput');
+                    const playerName = nameEl && nameEl.value ? nameEl.value.trim() : '';
+                    if (window.firebase && typeof window.firebase.addScore === 'function') {
+                        window.firebase.addScore({
+                            playerName: playerName || 'Anonymous',
+                            playerScore,
+                            computerScore,
+                            difficulty
+                        });
+                    }
+                } catch (e) {
+                    console.warn('Leaderboard save failed:', e);
+                }
+            }
         }
 
         function movePlayer() {
@@ -547,6 +693,49 @@
             draw();
         }
 
+        // Cookies initialization and banner
+        function initCookies() {
+            const banner = document.getElementById('cookieBanner');
+            let consentLS = null;
+            try {
+                consentLS = localStorage.getItem('cookieConsent');
+            } catch (e) {}
+            const consentCookie = getCookie('cookieConsent');
+
+            const hasRecordedChoice = (consentLS === 'yes' || consentLS === 'no' || consentCookie === 'yes' || consentCookie === 'no');
+            if (!hasRecordedChoice && banner) {
+                banner.classList.add('show');
+            }
+
+            const acceptBtn = document.getElementById('cookieAccept');
+            const declineBtn = document.getElementById('cookieDecline');
+
+            if (acceptBtn) {
+                acceptBtn.addEventListener('click', () => {
+                    try { localStorage.setItem('cookieConsent', 'yes'); } catch (e) {}
+                    setCookie('cookieConsent', 'yes', 365);
+                    setCookie('pong_difficulty', difficulty, 365);
+                    if (banner) banner.classList.remove('show');
+                });
+            }
+
+            if (declineBtn) {
+                declineBtn.addEventListener('click', () => {
+                    try { localStorage.setItem('cookieConsent', 'no'); } catch (e) {}
+                    setCookie('cookieConsent', 'no', 365);
+                    eraseCookie('pong_difficulty');
+                    if (banner) banner.classList.remove('show');
+                });
+            }
+
+            if ((consentLS === 'yes') || (consentCookie === 'yes')) {
+                const savedDifficulty = getCookie('pong_difficulty');
+                if (savedDifficulty && ['easy', 'medium', 'hard'].includes(savedDifficulty)) {
+                    setDifficulty(savedDifficulty);
+                }
+            }
+        }
+
         // Game loop
         function gameLoop() {
             update();
@@ -554,7 +743,148 @@
         }
 
         // Start the game
+        initCookies();
         gameLoop();
+    </script>
+
+    <script>
+        window.FIREBASE_CONFIG = {
+            apiKey: "AIzaSyCjkvA4PAkzIDNkRA6DHa9HFeKnjKd3j6U",
+            authDomain: "jpongwebsite.firebaseapp.com",
+            projectId: "jpongwebsite",
+            storageBucket: "jpongwebsite.firebasestorage.app",
+            messagingSenderId: "988923587725",
+            appId: "1:988923587725:web:695cd261f63cf499fac6c4"
+        };
+    </script>
+
+    <!-- Firebase module loader and Firestore helpers -->
+    <script type="module" id="firebaseModule">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from 'https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js';
+
+        async function loadFirebaseConfig() {
+            if (window.FIREBASE_CONFIG) return window.FIREBASE_CONFIG;
+            try {
+                const res = await fetch('/firebase-config.json', { cache: 'no-store' });
+                if (!res.ok) return null;
+                return await res.json();
+            } catch (e) {
+                return null;
+            }
+        }
+
+        (async () => {
+            const config = await loadFirebaseConfig();
+            if (!config) {
+                console.warn('Firebase config missing. Leaderboard is disabled until configured.');
+                return;
+            }
+            try {
+                const app = initializeApp(config);
+                const db = getFirestore(app);
+
+                window.firebase = {
+                    ready: true,
+                    addScore: async ({ playerName, playerScore, computerScore, difficulty }) => {
+                        try {
+                            console.log('🔥 WRITING SCORE TO FIRESTORE:', { 
+                                playerName: playerName || 'Anonymous', 
+                                playerScore, 
+                                computerScore, 
+                                difficulty 
+                            });
+                            const ref = collection(db, 'pongLeaderboard');
+                            await addDoc(ref, {
+                                playerName: playerName || 'Anonymous',
+                                playerScore: playerScore ?? 0,
+                                computerScore: computerScore ?? 0,
+                                difficulty,
+                                createdAt: serverTimestamp()
+                            });
+                            console.log('✅ SCORE WRITTEN SUCCESSFULLY');
+                        } catch (e) {
+                            console.error('❌ FAILED TO WRITE SCORE:', e);
+                        }
+                    },
+                    loadTopScores: async (limitCount = 10) => {
+                        try {
+                            console.log('📖 READING SCORES FROM FIRESTORE...');
+                            const ref = collection(db, 'pongLeaderboard');
+                            const snap = await getDocs(ref);
+                            const scores = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                            console.log(`✅ READ ${scores.length} SCORES FROM FIRESTORE:`, scores);
+                            // Sort in JavaScript instead of Firestore to avoid index requirement
+                            return scores.sort((a, b) => b.playerScore - a.playerScore).slice(0, limitCount);
+                        } catch (e) {
+                            console.error('❌ FAILED TO READ SCORES:', e);
+                            return [];
+                        }
+                    }
+                };
+            } catch (e) {
+                console.warn('Firebase init failed:', e);
+            }
+        })();
+    </script>
+
+    <script>
+        // Leaderboard UI handlers (depends on window.firebase if available)
+        function renderLeaderboard(items) {
+            const list = document.getElementById('leaderboardList');
+            if (!list) return;
+            list.innerHTML = '';
+            if (!items || items.length === 0) {
+                const li = document.createElement('li');
+                li.className = 'leaderboard-item';
+                li.textContent = 'No scores yet.';
+                list.appendChild(li);
+                return;
+            }
+            items.forEach((item, idx) => {
+                const li = document.createElement('li');
+                li.className = 'leaderboard-item';
+                const when = item.createdAt && typeof item.createdAt.toDate === 'function' ? item.createdAt.toDate() : null;
+                const dateStr = when ? when.toLocaleString() : '';
+                li.innerHTML = `<span>#${idx + 1} ${item.playerName || 'Anonymous'} — ${item.playerScore}:${item.computerScore} (${item.difficulty || 'medium'})</span><span>${dateStr}</span>`;
+                list.appendChild(li);
+            });
+        }
+
+        function setLeaderboardLoading() {
+            const list = document.getElementById('leaderboardList');
+            if (!list) return;
+            list.innerHTML = '';
+            const li = document.createElement('li');
+            li.className = 'leaderboard-item';
+            li.textContent = 'Loading...';
+            list.appendChild(li);
+        }
+
+        function attachLeaderboardHandlers() {
+            const btn = document.getElementById('loadLeaderboardBtn');
+            if (!btn) return;
+            btn.addEventListener('click', async () => {
+                if (!(typeof hasConsent === 'function' && hasConsent())) {
+                    renderLeaderboard([]);
+                    return;
+                }
+                if (!window.firebase || typeof window.firebase.loadTopScores !== 'function') {
+                    renderLeaderboard([]);
+                    return;
+                }
+                setLeaderboardLoading();
+                const items = await window.firebase.loadTopScores(10);
+                renderLeaderboard(items);
+            });
+        }
+
+        // Attach after DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', attachLeaderboardHandlers);
+        } else {
+            attachLeaderboardHandlers();
+        }
     </script>
 </body>
 </html>
