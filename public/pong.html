@@ -509,8 +509,8 @@
             
             message.classList.add('show');
 
-            // Save to leaderboard if player won and consent is given
-            if (winner === 'player' && typeof hasConsent === 'function' && hasConsent()) {
+            // Save to leaderboard if consent is given (both wins and losses)
+            if (typeof hasConsent === 'function' && hasConsent()) {
                 try {
                     const nameEl = document.getElementById('playerNameInput');
                     const playerName = nameEl && nameEl.value ? nameEl.value.trim() : '';
